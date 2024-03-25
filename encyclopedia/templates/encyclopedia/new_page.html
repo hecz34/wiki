@@ -5,12 +5,13 @@
 {% endblock %}
 
 {% block body %}
-    <form action="{% url 'new_page' %}" method="post">
+    <!-- {% url 'new_page' %} -->
+    <form action="" method="post">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="SAVE">
+        <input class="save-btn" type="submit" value="SAVE">
         {% if error %}
-            <h4>{{ error }}</h4>
+            <h4 style="display: inline-block; color: red; margin-left: 10px;">{{ error }}</h4>
         {% endif %}
     </form>
 {% endblock %}

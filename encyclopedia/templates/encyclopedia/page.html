@@ -10,4 +10,5 @@
     {% else %}
         <h1>Page does not exist</h1>
     {% endif %}
+    <a href="{% url 'edit' title=title %}">Edit Page</a>
 {% endblock %}

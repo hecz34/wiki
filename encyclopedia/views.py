@@ -1,5 +1,8 @@
 from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django import forms
+from random import choice
 import markdown2
 
 from . import util
@@ -39,12 +42,8 @@ def entry(request, title):
 def search(request):
     if request.method == "POST":
         title = request.POST.get("search_query")
-        if content := convert_md_to_html(title):
-            return render(
-                request,
-                "encyclopedia/page.html",
-                {"title": title, "content": content},
-            )
+        if util.get_entry(title):
+            return HttpResponseRedirect(reverse("entry", kwargs={"title": title}))
         results = []
         for entry in util.list_entries():
             if title.casefold() in entry.casefold():
@@ -60,12 +59,8 @@ def new_page(request):
             title = form.cleaned_data["title"]
             content = form.cleaned_data["content"]
             if not util.get_entry(title):
-                util.save_entry(title, content)
-                return render(
-                    request,
-                    "encyclopedia/page.html",
-                    {"title": title, "content": convert_md_to_html(title)},
-                )
+                util.save_entry(title.capitalize(), content)
+                return HttpResponseRedirect(reverse("entry", kwargs={"title": title}))
 
             return render(
                 request,
@@ -74,3 +69,28 @@ def new_page(request):
             )
 
     return render(request, "encyclopedia/new_page.html", {"form": NewPageForm()})
+
+
+def edit(request, title):
+    if request.method == "POST":
+        form = NewPageForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data["title"]
+            content = form.cleaned_data["content"]
+            util.save_entry(title, content)
+            return HttpResponseRedirect(reverse("entry", kwargs={"title": title}))
+
+    content = util.get_entry(title)
+    return render(
+        request,
+        "encyclopedia/new_page.html",
+        {"form": NewPageForm({"title": title, "content": content})},
+    )
+
+
+def random(request):
+    # entries = util.list_entries()
+    # title = choice(entries)
+    return HttpResponseRedirect(
+        reverse("entry", kwargs={"title": choice(util.list_entries())})
+    )
